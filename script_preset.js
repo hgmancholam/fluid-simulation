@@ -6,31 +6,38 @@ const canvas = document.getElementsByTagName("canvas")[0];
 resizeCanvas();
 
 let config = {
-  SIM_RESOLUTION: 128,
+  SIM_RESOLUTION: 128 /*32 - 256*/,
   DYE_RESOLUTION: 1024,
   CAPTURE_RESOLUTION: 512,
-  DENSITY_DISSIPATION: 1,
-  VELOCITY_DISSIPATION: 0.2,
-  PRESSURE: 0.8,
+  DENSITY_DISSIPATION: 4 /*0.2 - 4*/,
+  VELOCITY_DISSIPATION: 3 /*0 - 4*/,
+  PRESSURE: 0.8 /*0 - 1*/,
   PRESSURE_ITERATIONS: 20,
-  CURL: 30,
-  SPLAT_RADIUS: 0.25,
+  CURL: 0 /*viscocidas 0-50 */,
+  SPLAT_RADIUS: 0.3 /*Radio del fluido 0 - 1*/,
   SPLAT_FORCE: 6000,
-  SHADING: true,
-  COLORFUL: true,
+  SHADING: true /*Sombreado true o false */,
+  COLORFUL: false /* multiples colores de fluido true o false */,
   COLOR_UPDATE_SPEED: 10,
   PAUSED: false,
   BACK_COLOR: { r: 0, g: 0, b: 0 },
   TRANSPARENT: false,
-  BLOOM: true,
+  BLOOM: false,
   BLOOM_ITERATIONS: 8,
   BLOOM_RESOLUTION: 256,
   BLOOM_INTENSITY: 0.8,
   BLOOM_THRESHOLD: 0.6,
   BLOOM_SOFT_KNEE: 0.7,
-  SUNRAYS: true,
+  SUNRAYS: false,
   SUNRAYS_RESOLUTION: 196,
   SUNRAYS_WEIGHT: 1.0,
+  BRILLO_FLUIDO: 0.5 /*BRILLO DEL FLUIDO 0-1 */,
+  RANDOM_COLOR: false /*indica sui el color del fluido se genera aleatoriamente.  */,
+  FLUID_HSV_COLOR: {
+    r: 0.5,
+    g: 1,
+    b: 1,
+  } /* arreglo color HSV, arreglo  3 elementos de 0 - 1 */,
 };
 
 function pointerPrototype() {
@@ -62,7 +69,7 @@ if (!ext.supportLinearFiltering) {
   config.SUNRAYS = false;
 }
 
-startGUI();
+//startGUI();
 
 function getWebGLContext(canvas) {
   const params = {
@@ -209,8 +216,6 @@ function startGUI() {
     .name("enabled")
     .onFinishChange(updateKeywords);
   sunraysFolder.add(config, "SUNRAYS_WEIGHT", 0.3, 1.0).name("weight");
-
-
 
   if (isMobile()) gui.close();
 }
@@ -1712,11 +1717,22 @@ function correctDeltaY(delta) {
 }
 
 function generateColor() {
-  let c = HSVtoRGB(Math.random(), 1.0, 1.0);
-  c.r *= 0.15;
-  c.g *= 0.15;
-  c.b *= 0.15;
-  return c;
+  if (config.RANDOM_COLOR) {
+    const x = config.BRILLO_FLUIDO;
+    let c = HSVtoRGB(Math.random(), 1.0, 1.0);
+    c.r *= x;
+    c.g *= x;
+    c.b *= x;
+    return c;
+  } else {
+    const x = config.BRILLO_FLUIDO;
+    const color = config.FLUID_HSV_COLOR;
+    let c = HSVtoRGB(color.r, color.g, color.b);
+    c.r *= x;
+    c.g *= x;
+    c.b *= x;
+    return c;
+  }
 }
 
 function HSVtoRGB(h, s, v) {
